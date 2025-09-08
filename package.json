@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx --watch src/main",
-    "start": "node /dist/main.js"
+    "start": "node dist/main.js"
   },
   "devDependencies": {
     "@types/bun": "latest",

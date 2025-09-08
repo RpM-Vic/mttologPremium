@@ -5,6 +5,7 @@ import { pages } from "./controllers/pages.js";
 import { activities } from "./controllers/activities.js";
 import 'dotenv/config'
 
+console.log("actual port: ",process.env.PORT)
 const PORT=process.env.PORT??80
 
 const app = express();

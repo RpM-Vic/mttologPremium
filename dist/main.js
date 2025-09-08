@@ -14,6 +14,7 @@ import { testConnection } from "./DB/nodePG/dbConnection.js";
 import { pages } from "./controllers/pages.js";
 import { activities } from "./controllers/activities.js";
 import 'dotenv/config';
+console.log("actual port: ", process.env.PORT);
 const PORT = (_a = process.env.PORT) !== null && _a !== void 0 ? _a : 80;
 const app = express();
 app.use(express.json());

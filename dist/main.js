@@ -12,6 +12,7 @@ import express from "express";
 import { testConnection } from "./DB/nodePG/dbConnection.js";
 import { pages } from "./controllers/pages.js";
 import { activities } from "./controllers/activities.js";
+import 'dotenv/config';
 const PORT = process.env.PORT || 4000;
 const app = express();
 app.use(express.json());

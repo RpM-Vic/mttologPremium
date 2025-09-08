@@ -44,7 +44,6 @@ activities.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* (
     // const user_id=req.cookies
     const user_id = "12345";
     const { newActivities } = req.body;
-    console.log({ newActivities });
     try {
         yield deleteAllActivitiesFromOneUser(user_id);
         yield createActivities(user_id, newActivities);

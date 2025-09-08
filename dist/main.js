@@ -7,13 +7,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var _a;
 // main.ts
 import express from "express";
 import { testConnection } from "./DB/nodePG/dbConnection.js";
 import { pages } from "./controllers/pages.js";
 import { activities } from "./controllers/activities.js";
 import 'dotenv/config';
-const PORT = process.env.PORT || 4000;
+const PORT = (_a = process.env.PORT) !== null && _a !== void 0 ? _a : 4000;
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -3,27 +3,27 @@ import express from "express";
 import { testConnection } from "./DB/nodePG/dbConnection.js";
 import { pages } from "./controllers/pages.js";
 import { activities } from "./controllers/activities.js";
-import 'dotenv/config'
-
-const PORT=process.env.PORT
+import 'dotenv/config';
 
 const app = express();
+
 app.use(express.json());
-app.use(express.urlencoded({extended:true}));
-// app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/activities", activities);
-app.use("/",pages)
+app.use("/", pages);
 
-async function startServer() {
-  app.listen(PORT, async () => {
-    await testConnection();
-    console.log("actual port: ",process.env.PORT)
+// Run testConnection at cold start
+testConnection().catch(err => {
+  console.error("DB connection failed:", err);
+});
+
+export default app; // ✅ don't call app.listen()
+
+
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT ?? 4000;
+  app.listen(PORT, () => {
     console.log(`🚀 Server listening on http://localhost:${PORT}`);
-  }); 
+  });
 }
-
-startServer()
-
-export default startServer
-

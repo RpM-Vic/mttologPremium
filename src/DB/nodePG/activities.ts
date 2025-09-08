@@ -1,6 +1,6 @@
-import { generateId } from "../../helpers/generateId";
+import { generateId } from "../../helpers/generateId.js";
 import { IActivity, DBActivity } from "../../interfaces";
-import { pool } from "./dbConnection";
+import { pool } from "./dbConnection.js";
 
 export async function getAllActivities(): Promise<DBActivity[]> {
   const { rows } = await pool.query<DBActivity>("SELECT * FROM activities");

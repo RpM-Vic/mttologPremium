@@ -42,7 +42,6 @@ activities.post('/',async(req:Request,res:Response)=>{
   // const user_id=req.cookies
   const user_id="12345"
   const {newActivities}=req.body
-  console.log({newActivities})
   try{
     await deleteAllActivitiesFromOneUser(user_id)
     await createActivities(user_id,newActivities)

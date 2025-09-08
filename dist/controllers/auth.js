@@ -1,9 +1,8 @@
+"use strict";
 // import { Router } from "express"
 // import { createNewUser, getUser } from "../DB/bunSQL/user"
 // import { verifySync } from "@node-rs/bcrypt"
-
 // export const auth=Router()
-
 // auth.post('/login',async (req,res)=>{
 //   const {email,password}=req.body
 //   if(!email||!password){
@@ -27,9 +26,7 @@
 //     userNAme:user.name,
 //     subscription_end:user.subscription_ends
 //   })
-
 // })
-
 // auth.post('/signup',async(req,res)=>{
 //   const {name,email,password}=req.body
 //   if(!email||!password||!name){
@@ -57,7 +54,5 @@
 //     })
 //   }
 // })
-
 // auth.get('/logout',(req,res)=>{
-
 // })

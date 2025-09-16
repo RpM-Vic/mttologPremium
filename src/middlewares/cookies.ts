@@ -2,7 +2,7 @@ import  Jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
 import 'dotenv/config'
 import { NextFunction, Request, Response } from 'express';
-import { getUserByEmail } from '../DB/nodePG/users';
+import { getUserByEmail } from '../DB/nodePG/users.js';
 // import { Logger } from '../helpers/Logger';
 
 if (!process.env.SECRET) {

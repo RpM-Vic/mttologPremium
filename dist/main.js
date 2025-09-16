@@ -5,11 +5,17 @@ import { testConnection } from "./DB/nodePG/dbConnection.js";
 import { pages } from "./controllers/pages.js";
 import { activities } from "./controllers/activities.js";
 import 'dotenv/config';
+import { auth } from "./controllers/auth.js";
+import cookieParser from 'cookie-parser';
+import { limiter } from "./middlewares/rateLimit.js";
 const app = express();
+//middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/api/activities", activities);
-app.use("/", pages);
+app.use(cookieParser());
+app.use("/api/activities", limiter, activities);
+app.use("/api/login", auth);
+app.use("/", limiter, pages);
 // Run testConnection at cold start
 testConnection().catch(err => {
     console.error("DB connection failed:", err);

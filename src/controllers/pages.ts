@@ -1,7 +1,7 @@
 import path from 'path';
 import mime from 'mime-types';
 import express, { type Request, type Response } from 'express';
-import { validateTokenAPI } from '../middlewares/cookies';
+import { validateTokenAPI } from '../middlewares/cookies.js';
 
 const __dirname=process.cwd();
 

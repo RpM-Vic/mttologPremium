@@ -8,47 +8,47 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 import { Router } from "express";
-import { createActivities, deleteAllActivitiesFromOneUser, getAllActivities, getAllActivitiesFromOneUser } from "../DB/nodePG/activities.js";
+import { createActivities, deleteAllActivitiesFromOneUser, getAllActivitiesFromOneUser } from "../DB/nodePG/activities.js";
+import { validateTokenAPI } from "../middlewares/cookies.js";
+// import { validateToken } from "../middlewares/cookies.js";
 export const activities = Router();
-activities.get('/hello', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const activities = yield getAllActivities();
-    res.json({
-        msg: 'Hello World',
-        activities
-    });
-}));
-activities.get('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // const user_id=req.cookies
-    // if(!user_id){
-    //     res.status(401).json({
-    //       msg:"Something went wrong"
-    //     })
-    //   return 
-    // }
-    const user_id = "12345"; //TESTING
+activities.get('/', validateTokenAPI, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // const user_id="12345"  //TESTING
+    const payload = req.user;
+    if (!payload) {
+        res.status(401).json({
+            message: "Something went wrong"
+        });
+        return;
+    }
     try {
-        const activities = yield getAllActivitiesFromOneUser(user_id);
+        const activities = yield getAllActivitiesFromOneUser(payload.user_id);
         res.json({
-            msg: "Activities listed",
+            message: "Activities listed",
             activities
         });
     }
     catch (error) {
         console.log(error);
         res.status(500).json({
-            msg: "Something went wrong"
+            message: "Something went wrong"
         });
     }
 }));
-activities.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // const user_id=req.cookies
-    const user_id = "12345";
+activities.post('/', validateTokenAPI, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const payload = req.user;
+    if (!payload) {
+        res.status(401).json({
+            message: "Something went wrong"
+        });
+        return;
+    }
     const { newActivities } = req.body;
     try {
-        yield deleteAllActivitiesFromOneUser(user_id);
-        yield createActivities(user_id, newActivities);
+        yield deleteAllActivitiesFromOneUser(payload.user_id);
+        yield createActivities(payload.user_id, newActivities);
         res.status(201).json({
-            msg: "Activities have been created"
+            message: "Activities have been created"
         });
     }
     catch (e) {

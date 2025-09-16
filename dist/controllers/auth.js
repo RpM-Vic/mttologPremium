@@ -45,7 +45,7 @@ auth.post('/', strictLimiter, (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.setHeader('Set-Cookie', token).status(201).json({
             ok: true,
             message: "Welcome",
-            user: { id: user.email, email: user.email }
+            user: { name: user.name, email: user.email }
         });
     }
     catch (error) {
@@ -82,7 +82,7 @@ auth.post('/signup', strictLimiter, (req, res) => __awaiter(void 0, void 0, void
         res.setHeader('Set-Cookie', token).status(201).json({
             ok: true,
             message: "User created",
-            user: { id: newUser.email, email: newUser.email }
+            user: { name: newUser.name, email: newUser.email }
         });
     }
     catch (e) {

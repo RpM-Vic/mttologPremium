@@ -20,3 +20,24 @@ export interface DBActivity {
   created_at: Date;
   updated_at: Date;
 }
+
+export interface ILoginUser{
+  email:string,   //unique
+  password:string, //not null
+}
+
+export interface IUser extends ILoginUser{
+  name:string,     //not null
+}
+
+export interface DBUser extends IUser{
+  //db specific
+  user_id: string  //primary key
+  active:boolean, //default 1 not null
+  created_at:Date, //timestamp not null
+  updated_at:Date, //timestamp
+  expiration_date:Date|null 
+  roles:string  //not null
+  OTP:string|null
+  buffer:string|null
+}

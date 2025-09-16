@@ -4,13 +4,18 @@ import { testConnection } from "./DB/nodePG/dbConnection.js";
 import { pages } from "./controllers/pages.js";
 import { activities } from "./controllers/activities.js";
 import 'dotenv/config';
+import { auth } from "./controllers/auth.js";
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
+//middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser())
 
 app.use("/api/activities", activities);
+app.use("/api/login",auth)
 app.use("/", pages);
 
 // Run testConnection at cold start

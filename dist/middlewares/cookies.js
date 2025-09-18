@@ -38,11 +38,11 @@ export const generateAndSerializeToken = (email, accessGranded, _id, name, roles
         roles
     };
     const token = Jwt.sign(payload, SECRET, {
-        expiresIn: "48h",
+        expiresIn: "72h",
     });
     const serialized = serialize("MyTokenName", token, {
         path: "/",
-        maxAge: 60 * 60 * 48, //this are secconds, don't trust anyone telling the opposite
+        maxAge: 60 * 60 * 24 * 3, //this are secconds, don't trust anyone telling the opposite
         sameSite: 'strict', //prevents cross site reques forgery
         secure: isDevelopment == 'development' ? false : true, //https only?
         httpOnly: true
@@ -87,7 +87,6 @@ export const validateTokenAPI = (req, res, next) => __awaiter(void 0, void 0, vo
         if (new Date(payload.renewCookieAfter) < today) { //expired
             // const user=await User.findOne({email:payload.email})
             const user = yield getUserByEmail(payload.email);
-            console.log("expired");
             if (user == null || user == undefined) {
                 // Logger.error('User not found')
                 console.log('User not found');

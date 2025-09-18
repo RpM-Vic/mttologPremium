@@ -45,13 +45,13 @@ export const generateAndSerializeToken = (email:string,accessGranded:eAccessGran
     roles
   };
   const token = Jwt.sign(payload,SECRET,{
-    expiresIn:"48h",
+    expiresIn:"72h",
     
   })   
 
   const serialized= serialize("MyTokenName",token,{
     path:"/",
-    maxAge: 60*60*48, //this are secconds, don't trust anyone telling the opposite
+    maxAge: 60*60*24*3, //this are secconds, don't trust anyone telling the opposite
     sameSite:'strict', //prevents cross site reques forgery
     secure: isDevelopment=='development'?false:true,  //https only?
     httpOnly: true   
@@ -112,8 +112,6 @@ export const validateTokenAPI = async (req: AuthRequest, res: Response, next: Ne
     if(new Date(payload.renewCookieAfter)<today){ //expired
       // const user=await User.findOne({email:payload.email})
       const user=await getUserByEmail(payload.email)
-
-      console.log("expired")
 
       if(user==null||user==undefined){
         // Logger.error('User not found')

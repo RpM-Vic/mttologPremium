@@ -50,6 +50,7 @@ activities.post('/', validateTokenAPI, (req, res) => __awaiter(void 0, void 0, v
         res.status(201).json({
             message: "Activities have been created"
         });
+        return;
     }
     catch (e) {
         console.log("error creating activities: ", e);

@@ -1,3 +1,5 @@
+//This logic checks the database only each 2 hours
+//If you don't make any request in 3 days then you need to log in again
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -25,8 +27,8 @@ export var eAccessGranted;
 export const generateAndSerializeToken = (email, accessGranded, _id, name, roles) => {
     const now = new Date();
     const renewCookieAfter = new Date(now); //copy to prevent mutation
-    renewCookieAfter.setHours(now.getHours() + 2); // Fixed: Properly adds 2 hours
-    // renewCookieAfter.setHours(now.getMinutes() + 2);  // 2 minutes for testing
+    renewCookieAfter.setHours(now.getHours() + 2); // adds 2 hours
+    // renewCookieAfter.setSeconds(now.getSeconds() + 5);  //for testing
     const payload = {
         ValidFrontEnd: "ValidFrontEnd",
         email,
@@ -42,7 +44,7 @@ export const generateAndSerializeToken = (email, accessGranded, _id, name, roles
     });
     const serialized = serialize("MyTokenName", token, {
         path: "/",
-        maxAge: 60 * 60 * 24 * 3, //this are secconds, don't trust anyone telling the opposite
+        maxAge: 60 * 60 * 24 * 3, //these are secconds, don't trust anyone telling the opposite
         sameSite: 'strict', //prevents cross site reques forgery
         secure: isDevelopment == 'development' ? false : true, //https only?
         httpOnly: true
@@ -53,15 +55,17 @@ export const validateTokenAPI = (req, res, next) => __awaiter(void 0, void 0, vo
     const denyAccess = () => {
         if (req.method == 'GET') {
             res.redirect('/auth');
+            console.log("denying access");
             return;
         }
         else {
             res.status(403).json({
                 ok: false,
-                message: "forbidden"
+                message: "Please log in to procced"
             });
+            console.log("denying access");
+            return;
         }
-        return;
     };
     const token = req.cookies.MyTokenName;
     if (!token) {
@@ -69,7 +73,6 @@ export const validateTokenAPI = (req, res, next) => __awaiter(void 0, void 0, vo
         console.log("token not found");
         return denyAccess(); // Added return
     }
-    console.log("token found");
     try {
         const payload = Jwt.verify(token, SECRET);
         if (!payload || (payload === null || payload === void 0 ? void 0 : payload.ValidFrontEnd) !== 'ValidFrontEnd') {
@@ -84,8 +87,10 @@ export const validateTokenAPI = (req, res, next) => __awaiter(void 0, void 0, vo
         }
         //This logic is to check the database (only after 2 hours)
         const today = new Date();
-        if (new Date(payload.renewCookieAfter) < today) { //expired
-            // const user=await User.findOne({email:payload.email})
+        const renewCookieAfter = new Date(payload.renewCookieAfter);
+        console.log(renewCookieAfter);
+        if (renewCookieAfter < today) { //requires renewal
+            console.log("renewing cookie");
             const user = yield getUserByEmail(payload.email);
             if (user == null || user == undefined) {
                 // Logger.error('User not found')
@@ -93,33 +98,29 @@ export const validateTokenAPI = (req, res, next) => __awaiter(void 0, void 0, vo
                 denyAccess();
                 return;
             }
-            console.log("expiration =", user.expiration_date);
-            if (user.expiration_date == undefined) {
-                // Logger.error('Payment required from user',user.email)
-                console.log('Payment required from user', user.email);
-                denyAccess();
-                return;
-            }
-            if (user.expiration_date < today) { //subscription finished
-                // Logger.error('Payment required from user',user.email)
-                console.log("subscription finished");
-                res.status(402).json({
-                    ok: false,
-                    message: "Payment required"
-                });
+            if (user.expiration_date == undefined || user.expiration_date == undefined) {
+                console.log("expiration = null or undefined");
+                req.user = payload;
+                const newToken = generateAndSerializeToken(user.email, eAccessGranted.Granted, user.user_id, user.name, user.roles);
+                res.setHeader('Set-Cookie', newToken);
+                console.log("cookie has been renewed, permanent subscription");
+                next();
                 return;
             }
             if ((user === null || user === void 0 ? void 0 : user.expiration_date) > today) { //subscription not finished
-                // Logger.info('Cookie updated')
-                console.log("subscriptoin not finished");
+                console.log("subscription not finished");
+                req.user = payload;
                 const newToken = generateAndSerializeToken(user.email, eAccessGranted.Granted, user.user_id, user.name, user.roles);
                 res.setHeader('Set-Cookie', newToken);
-                req.user = payload;
+                console.log("cookie has been renewed, temporal subscription");
+                next();
             }
         }
-        req.user = payload;
-        console.log("catching the end");
-        next(); // Only call next if validation succeeds
+        else {
+            req.user = payload;
+            console.log("catching the end");
+            next(); // Only call next if validation succeeds
+        }
     }
     catch (error) {
         return denyAccess(); // Added return

@@ -1,3 +1,6 @@
+//This logic checks the database only each 2 hours
+//If you don't make any request in 3 days then you need to log in again
+
 import  Jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
 import 'dotenv/config'
@@ -31,8 +34,8 @@ export const generateAndSerializeToken = (email:string,accessGranded:eAccessGran
 
   const now = new Date();
   const renewCookieAfter = new Date(now);//copy to prevent mutation
-  renewCookieAfter.setHours(now.getHours() + 2);  // Fixed: Properly adds 2 hours
-  // renewCookieAfter.setHours(now.getMinutes() + 2);  // 2 minutes for testing
+  renewCookieAfter.setHours(now.getHours() + 2);  // adds 2 hours
+  // renewCookieAfter.setSeconds(now.getSeconds() + 5);  //for testing
 
   const payload:IPayload = {
     ValidFrontEnd:"ValidFrontEnd",
@@ -51,7 +54,7 @@ export const generateAndSerializeToken = (email:string,accessGranded:eAccessGran
 
   const serialized= serialize("MyTokenName",token,{
     path:"/",
-    maxAge: 60*60*24*3, //this are secconds, don't trust anyone telling the opposite
+    maxAge: 60*60*24*3, //these are secconds, don't trust anyone telling the opposite
     sameSite:'strict', //prevents cross site reques forgery
     secure: isDevelopment=='development'?false:true,  //https only?
     httpOnly: true   
@@ -74,15 +77,17 @@ export const validateTokenAPI = async (req: AuthRequest, res: Response, next: Ne
   const denyAccess = () => {
     if(req.method=='GET'){
       res.redirect('/auth')
+      console.log("denying access")
       return
     }
     else{
       res.status(403).json({   
         ok: false,
-        message: "forbidden"
+        message: "Please log in to procced"
       });
+      console.log("denying access")
+      return 
     }
-    return 
   };
 
   const token = req.cookies.MyTokenName;
@@ -91,7 +96,6 @@ export const validateTokenAPI = async (req: AuthRequest, res: Response, next: Ne
     console.log("token not found")
     return denyAccess();  // Added return
   }
-  console.log("token found")
   try {
     const payload = Jwt.verify(token, SECRET) as IPayload;
     
@@ -109,8 +113,10 @@ export const validateTokenAPI = async (req: AuthRequest, res: Response, next: Ne
 
     //This logic is to check the database (only after 2 hours)
     const today=new Date()
-    if(new Date(payload.renewCookieAfter)<today){ //expired
-      // const user=await User.findOne({email:payload.email})
+    const renewCookieAfter=new Date(payload.renewCookieAfter)
+    console.log(renewCookieAfter)
+    if(renewCookieAfter<today){ //requires renewal
+      console.log("renewing cookie")
       const user=await getUserByEmail(payload.email)
 
       if(user==null||user==undefined){
@@ -119,39 +125,32 @@ export const validateTokenAPI = async (req: AuthRequest, res: Response, next: Ne
         denyAccess()
         return
       }
-      console.log("expiration =",user.expiration_date)
 
-      if(user.expiration_date==undefined){
-        // Logger.error('Payment required from user',user.email)
-        console.log('Payment required from user',user.email)
-        denyAccess()
-        return
-      }
-
-      if(user.expiration_date<today){ //subscription finished
-        // Logger.error('Payment required from user',user.email)
-        console.log("subscription finished")
-        res.status(402).json({
-          ok:false,
-          message:"Payment required"
-        })
+      if(user.expiration_date==undefined||user.expiration_date==undefined){
+        console.log("expiration = null or undefined")
+        req.user=payload
+        const newToken=generateAndSerializeToken(user.email,eAccessGranted.Granted,user.user_id,user.name,user.roles)
+        res.setHeader('Set-Cookie', newToken)
+        console.log("cookie has been renewed, permanent subscription")
+        next()
         return
       }
 
       if(user?.expiration_date>today){ //subscription not finished
-        // Logger.info('Cookie updated')
-        console.log("subscriptoin not finished")
-
+        console.log("subscription not finished")
+        req.user=payload
+        
         const newToken=generateAndSerializeToken(user.email,eAccessGranted.Granted,user.user_id,user.name,user.roles)
         res.setHeader('Set-Cookie', newToken)
-
-        req.user=payload
+        console.log("cookie has been renewed, temporal subscription")
+        next()
       }
     }
-
-    req.user=payload
-    console.log("catching the end")
-    next();  // Only call next if validation succeeds
+    else{ 
+      req.user=payload
+      console.log("catching the end")
+      next();  // Only call next if validation succeeds
+    }
   } catch (error) {
     return denyAccess();  // Added return
   }

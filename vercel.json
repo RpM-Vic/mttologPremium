@@ -11,5 +11,13 @@
       "src": "/(.*)",
       "dest": "/dist/main.js"
     }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)\\.(js|css|json|png|jpg|svg)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
   ]
 }

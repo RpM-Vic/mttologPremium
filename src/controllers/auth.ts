@@ -60,19 +60,48 @@ auth.post('/', strictLimiter,async (req, res) => {
 auth.post('/signup',strictLimiter,async(req,res)=>{
   const {name,email,password}=req.body
   if(!email||!password||!name){
-    return res.status(400).json({
+    res.status(400).json({
       message:"Some fields are missing"
     })
+    return 
   }
-  const prospect:IUser={name,email,password}
-  const user=await getUserByEmail(email)
-  if(user){
-    res.status(409).json({
-      message:"User already exists"
+
+  //validate password
+  if (password.length < 8) {
+    res.status(400).json({
+      message:"Password is too short"
     })
-    return
+    return 
   }
+  if (!/\d/.test(password)) {
+    res.status(400).json({
+      message:"Pass needs a number"
+    })
+    return 
+  }
+  if (!/[A-Z]/.test(password)) {
+    res.status(400).json({
+      message:"Pass needs an uppercase"
+    })
+    return 
+  }
+  if (!/[a-z]/.test(password)) {
+    res.status(400).json({
+      message:"Pass needs a lowercase"
+    })
+    return 
+  }
+
+  //the user is valid
+  const prospect:IUser={name,email,password}
   try{
+    const user=await getUserByEmail(email)
+    if(user){
+      res.status(409).json({
+        message:"User already exists"
+      })
+      return
+    }
     const newUser=await createUser(prospect)
     if(!newUser){
       res.status(500).json({

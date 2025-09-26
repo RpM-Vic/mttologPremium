@@ -40,11 +40,11 @@ export const generateAndSerializeToken = (email, accessGranded, _id, name, roles
         roles
     };
     const token = Jwt.sign(payload, SECRET, {
-        expiresIn: "72h",
+        expiresIn: "3h",
     });
     const serialized = serialize("MyTokenName", token, {
         path: "/",
-        maxAge: 60 * 60 * 24 * 3, //these are secconds, don't trust anyone telling the opposite
+        maxAge: 60 * 60 * 3, //these are secconds, don't trust anyone telling the opposite
         sameSite: 'strict', //prevents cross site reques forgery
         secure: isDevelopment == 'development' ? false : true, //https only?
         httpOnly: true
@@ -131,7 +131,7 @@ export const emptyCookie = () => __awaiter(void 0, void 0, void 0, function* () 
         path: "/",
         maxAge: 0, //this are secconds, don't trust anyone telling the opposite
         sameSite: 'strict', //prevents cross site reques forgery
-        secure: isDevelopment == 'development' ? false : true, //https only?
+        secure: isDevelopment == 'development' ? false : true, //https only
         httpOnly: true
     });
     return serialized;

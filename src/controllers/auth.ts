@@ -93,7 +93,9 @@ auth.post('/signup',strictLimiter,async(req,res)=>{
   }
 
   //the user is valid
-  const prospect:IUser={name,email,password}
+  const trimedName=name.trim()
+  const trimedEmail=email.trim()
+  const prospect:IUser={name:trimedName,email:trimedEmail,password}
   try{
     const user=await getUserByEmail(email)
     if(user){

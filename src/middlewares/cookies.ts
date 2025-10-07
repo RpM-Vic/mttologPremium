@@ -34,7 +34,7 @@ export const generateAndSerializeToken = (email:string,accessGranded:eAccessGran
 
   const now = new Date();
   const renewCookieAfter = new Date(now);//copy to prevent mutation
-  renewCookieAfter.setHours(now.getHours() + 2);  // adds 2 hours
+  renewCookieAfter.setHours(now.getMinutes() + 5); 
   // renewCookieAfter.setSeconds(now.getSeconds() + 5);  //for testing
 
   const payload:IPayload = {
@@ -48,7 +48,7 @@ export const generateAndSerializeToken = (email:string,accessGranded:eAccessGran
     roles
   };
   const token = Jwt.sign(payload,SECRET,{
-    expiresIn:"3h",
+    expiresIn:'15Min',
     
   })   
 
@@ -74,20 +74,19 @@ export interface AuthRequest extends Request{
 }
 
 export const validateTokenAPI = async (req: AuthRequest, res: Response, next: NextFunction) => {
+
   const denyAccess = () => {
-    if(req.method=='GET'){
-      res.redirect('/auth')
-      console.log("denying access")
-      return
-    }
-    else{
+    // For API routes, always return JSON
+    if (req.path.startsWith('/api/')) {
       res.status(403).json({   
         ok: false,
-        message: "Please log in to procced"
+        message: "Please log in to proceed"
       });
-      console.log("denying access")
-      return 
+    } else {
+      // For non-API routes, redirect
+      res.redirect('/auth');
     }
+    console.log("denying access");
   };
 
   const token = req.cookies.MyTokenName;

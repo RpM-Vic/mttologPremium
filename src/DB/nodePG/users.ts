@@ -5,12 +5,20 @@ import { pool } from "./dbConnection.js";
 
 
 export async function getAllUsers(): Promise<DBUser[]|null> {
-  return null
+  const query = 'SELECT * FROM users ';
+  const result = await pool.query(query);
+  return result.rows || null;
 }
 
 export async function getUserByEmail(email: string): Promise<DBUser | null> {
   const query = 'SELECT * FROM users WHERE email = $1';
   const result = await pool.query(query, [email]);
+  return result.rows[0] || null;
+}
+
+export async function getUserById(user_id: string): Promise<DBUser | null> {
+  const query = 'SELECT * FROM users WHERE user_id = $1';
+  const result = await pool.query(query, [user_id]);
   return result.rows[0] || null;
 }
 

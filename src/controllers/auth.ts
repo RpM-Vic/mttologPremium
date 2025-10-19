@@ -1,10 +1,9 @@
-import { Router } from "express"
+import { Request, Router } from "express"
 import { verifySync } from "@node-rs/bcrypt"
 import { createUser, getUserByEmail } from "../DB/nodePG/users.js"
 import z from "zod"
 import { IUser } from "../interfaces"
 import { eAccessGranted, emptyCookie, generateAndSerializeToken } from "../middlewares/cookies.js"
-import { strictLimiter } from "../middlewares/rateLimit.js"
 
 export const auth = Router()
 
@@ -14,7 +13,7 @@ const loginSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters")
 })
 
-auth.post('/', strictLimiter,async (req, res) => {
+auth.post('/',async (req, res) => {
   try {
     // Validate request body
     const validationResult = loginSchema.safeParse(req.body)
@@ -57,7 +56,7 @@ auth.post('/', strictLimiter,async (req, res) => {
   }
 })
 
-auth.post('/signup',strictLimiter,async(req,res)=>{
+auth.post('/signup',async(req:Request,res)=>{
   const {name,email,password}=req.body
   if(!email||!password||!name){
     res.status(400).json({

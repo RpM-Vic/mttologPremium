@@ -61,25 +61,11 @@ async function main() {
       CREATE TABLE IF NOT EXISTS orders (
         order_id SERIAL PRIMARY KEY,
         user_id VARCHAR(255) NOT NULL REFERENCES users(user_id),
+        sub_area_id VARCHAR(255) NOT NULL REFERENCES sub_areas(sub_area_id),
         status order_status NOT NULL DEFAULT 'pending',
         creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         finished_date TIMESTAMP,
         notes TEXT
-      );
-
-      -- ORDER PREVENTIVE STATUS ENUM
-      DO $$ BEGIN
-        CREATE TYPE order_preventive_status AS ENUM ('pending', 'finished', 'cancelled');
-      EXCEPTION WHEN duplicate_object THEN null; END $$;
-
-      -- ORDER_PREVENTIVES (junction table)
-      CREATE TABLE IF NOT EXISTS order_preventives (
-        order_preventive_id SERIAL PRIMARY KEY,
-        order_id INT NOT NULL REFERENCES orders(order_id) ON DELETE CASCADE,
-        preventive_id INT NOT NULL REFERENCES preventives(preventive_id) ON DELETE CASCADE,
-        status order_preventive_status NOT NULL DEFAULT 'pending',
-        finished_date TIMESTAMP,
-        UNIQUE(order_id, preventive_id) -- prevent duplicates
       );
 
       -- USER ROLE ENUM
@@ -106,8 +92,6 @@ async function main() {
       CREATE INDEX IF NOT EXISTS idx_sub_areas_area_id ON sub_areas(area_id);
       CREATE INDEX IF NOT EXISTS idx_preventives_sub_area_id ON preventives(sub_area_id);
       CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
-      CREATE INDEX IF NOT EXISTS idx_order_preventives_order_id ON order_preventives(order_id);
-      CREATE INDEX IF NOT EXISTS idx_order_preventives_preventive_id ON order_preventives(preventive_id);
 
     `);
 

@@ -1,0 +1,49 @@
+type Query{
+  preventives:[Preventive]
+  orders:[Order]
+  order(order_id: Int):Order
+  user(user_id: ID): User  
+  users:[User]
+}
+
+type Mutation{
+  createOrder(user_id: String,sub_area_id:Int):Order
+  editOrder(input:editOrderInput):Order
+}
+
+input editOrderInput{
+  order_id:Int
+  notes:String!
+  finished_date:String
+}
+
+type Order{
+  order_id:Int
+  user_id:String
+  creation_date:String
+  finished_date:String
+  notes:String
+  sub_area_id:Int  #foreign key
+  sub_area:Sub_area
+  preventives:[Preventive]
+  user:User
+}
+
+type Preventive{
+  preventiveID:Int
+  """__foreign__ `key`"""
+  sub_area_id:Int
+  description:String
+  denomination_id:Int
+  periodicity_id:Int
+}
+
+type Sub_area{
+  sub_area_id:Int
+  name:String
+}
+
+type User{
+  name:String
+  user_id:ID
+}

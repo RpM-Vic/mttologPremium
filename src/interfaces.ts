@@ -41,3 +41,22 @@ export interface DBUser extends IUser{
   OTP:string|null
   buffer:string|null
 }
+
+export interface IPreventive{
+  preventiveID:number,
+  sub_area_id:number,
+  description:string,
+  denomination:number,
+  periodicity:number,
+
+}
+
+export interface IOrder{
+  order_id:number,
+  user_id:string,
+  status:string,
+  creation_date:string,
+  finished_date:string,
+  notes:string,
+  sub_area_id:number
+}

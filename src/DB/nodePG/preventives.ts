@@ -1,5 +1,5 @@
 import { IOrder, IPreventive } from "../../interfaces";
-import { pool } from "./dbConnection";
+import { pool } from "./dbConnection.js";
 
 export async function getPreventives(): Promise<IPreventive[]> {
   try {

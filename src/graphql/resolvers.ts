@@ -1,5 +1,12 @@
-import { createOrder, editOrder, getOrderById, getOrders, getOrdersFromOneUser, getPreventives, getPreventivesFromOrder, getPreventivesFromSubArea, getSubArea } from "../DB/nodePG/preventives"
-import { getAllUsers, getUserById } from "../DB/nodePG/users"
+import { createOrder, 
+  editOrder, 
+  getOrderById, 
+  getOrders, 
+  getPreventives, 
+  getPreventivesFromOrder, 
+  getPreventivesFromSubArea, 
+  getSubArea } from "../DB/nodePG/preventives.js"
+import { getAllUsers, getUserById } from "../DB/nodePG/users.js"
 import { DBUser, IOrder, } from "../interfaces"
 import  { Request } from "express"
 

@@ -1,25 +1,15 @@
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import { Router } from "express";
 import { verifySync } from "@node-rs/bcrypt";
 import { createUser, getUserByEmail } from "../DB/nodePG/users.js";
 import z from "zod";
 import { eAccessGranted, emptyCookie, generateAndSerializeToken } from "../middlewares/cookies.js";
-import { strictLimiter } from "../middlewares/rateLimit.js";
 export const auth = Router();
 // Define Zod schema for login input
 const loginSchema = z.object({
     email: z.email("Invalid email format"),
     password: z.string().min(6, "Password must be at least 6 characters")
 });
-auth.post('/', strictLimiter, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+auth.post('/', async (req, res) => {
     try {
         // Validate request body
         const validationResult = loginSchema.safeParse(req.body);
@@ -30,7 +20,7 @@ auth.post('/', strictLimiter, (req, res) => __awaiter(void 0, void 0, void 0, fu
             });
         }
         const { email, password } = validationResult.data;
-        const user = yield getUserByEmail(email);
+        const user = await getUserByEmail(email);
         if (!user) {
             return res.status(404).json({
                 message: "User not found"
@@ -54,8 +44,8 @@ auth.post('/', strictLimiter, (req, res) => __awaiter(void 0, void 0, void 0, fu
             message: "Internal server error"
         });
     }
-}));
-auth.post('/signup', strictLimiter, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+auth.post('/signup', async (req, res) => {
     const { name, email, password } = req.body;
     if (!email || !password || !name) {
         res.status(400).json({
@@ -89,16 +79,18 @@ auth.post('/signup', strictLimiter, (req, res) => __awaiter(void 0, void 0, void
         return;
     }
     //the user is valid
-    const prospect = { name, email, password };
+    const trimedName = name.trim();
+    const trimedEmail = email.trim();
+    const prospect = { name: trimedName, email: trimedEmail, password };
     try {
-        const user = yield getUserByEmail(email);
+        const user = await getUserByEmail(email);
         if (user) {
             res.status(409).json({
                 message: "User already exists"
             });
             return;
         }
-        const newUser = yield createUser(prospect);
+        const newUser = await createUser(prospect);
         if (!newUser) {
             res.status(500).json({
                 message: `We couldn't create the user`
@@ -118,12 +110,12 @@ auth.post('/signup', strictLimiter, (req, res) => __awaiter(void 0, void 0, void
             message: "An error ocurred, we are working on it"
         });
     }
-}));
-auth.get('/logout', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const serialized = yield emptyCookie();
+});
+auth.get('/logout', async (req, res) => {
+    const serialized = await emptyCookie();
     // Set the cleared cookie in the response header
     res.setHeader('Set-Cookie', serialized).json({
         message: "You are logged out now",
         ok: true
     });
-}));
+});

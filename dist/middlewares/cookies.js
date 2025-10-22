@@ -1,14 +1,5 @@
 //This logic checks the database only each 2 hours
 //If you don't make any request in 3 days then you need to log in again
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 import Jwt from 'jsonwebtoken';
 import { serialize } from 'cookie';
 import 'dotenv/config';
@@ -27,7 +18,7 @@ export var eAccessGranted;
 export const generateAndSerializeToken = (email, accessGranded, _id, name, roles) => {
     const now = new Date();
     const renewCookieAfter = new Date(now); //copy to prevent mutation
-    renewCookieAfter.setHours(now.getHours() + 2); // adds 2 hours
+    renewCookieAfter.setHours(now.getMinutes() + 5);
     // renewCookieAfter.setSeconds(now.getSeconds() + 5);  //for testing
     const payload = {
         ValidFrontEnd: "ValidFrontEnd",
@@ -40,7 +31,7 @@ export const generateAndSerializeToken = (email, accessGranded, _id, name, roles
         roles
     };
     const token = Jwt.sign(payload, SECRET, {
-        expiresIn: "3h",
+        expiresIn: '15Min',
     });
     const serialized = serialize("MyTokenName", token, {
         path: "/",
@@ -51,21 +42,20 @@ export const generateAndSerializeToken = (email, accessGranded, _id, name, roles
     });
     return serialized;
 };
-export const validateTokenAPI = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+export const validateTokenAPI = async (req, res, next) => {
     const denyAccess = () => {
-        if (req.method == 'GET') {
-            res.redirect('/auth');
-            console.log("denying access");
-            return;
-        }
-        else {
+        // For API routes, always return JSON
+        if (req.path.startsWith('/api/')) {
             res.status(403).json({
                 ok: false,
-                message: "Please log in to procced"
+                message: "Please log in to proceed"
             });
-            console.log("denying access");
-            return;
         }
+        else {
+            // For non-API routes, redirect
+            res.redirect('/auth');
+        }
+        console.log("denying access");
     };
     const token = req.cookies.MyTokenName;
     if (!token) {
@@ -91,7 +81,7 @@ export const validateTokenAPI = (req, res, next) => __awaiter(void 0, void 0, vo
         console.log(renewCookieAfter);
         if (renewCookieAfter < today) { //requires renewal
             console.log("renewing cookie");
-            const user = yield getUserByEmail(payload.email);
+            const user = await getUserByEmail(payload.email);
             if (user == null || user == undefined) {
                 // Logger.error('User not found')
                 console.log('User not found');
@@ -125,8 +115,8 @@ export const validateTokenAPI = (req, res, next) => __awaiter(void 0, void 0, vo
     catch (error) {
         return denyAccess(); // Added return
     }
-});
-export const emptyCookie = () => __awaiter(void 0, void 0, void 0, function* () {
+};
+export const emptyCookie = async () => {
     const serialized = serialize("MyTokenName", "", {
         path: "/",
         maxAge: 0, //this are secconds, don't trust anyone telling the opposite
@@ -135,4 +125,4 @@ export const emptyCookie = () => __awaiter(void 0, void 0, void 0, function* () 
         httpOnly: true
     });
     return serialized;
-});
+};

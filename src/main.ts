@@ -5,7 +5,6 @@ import { auth } from "./controllers/auth.js";
 import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import express from "express";
-import { Request} from "express"
 import { expressMiddleware as apolloMiddleware } from '@as-integrations/express4';
 import {readFile} from 'node:fs/promises';
 import { pages } from "./controllers/pages.js";
@@ -15,6 +14,7 @@ import { limiter, strictLimiter } from "./middlewares/rateLimit.js";
 import { resolvers } from "./graphql/resolvers.js";
 import { testConnection } from "./DB/nodePG/dbConnection.js";
 import path from "node:path";
+import { corsMiddleware } from "./middlewares/cors.js";
 
 const __dirname=process.cwd();
 const app = express();
@@ -39,10 +39,11 @@ const apolloServer = new ApolloServer({
 await apolloServer.start()
 
 //middlewares
+app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
-//app.use(cors())
+// app.use(corsMiddleware);
 
 app.use("/api/activities",limiter, activities);
 app.use("/api/login",strictLimiter,auth)
